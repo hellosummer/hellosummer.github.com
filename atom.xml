@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Coder blog]]></title>
-  <link href="fake.coderblog.com/atom.xml" rel="self"/>
-  <link href="fake.coderblog.com/"/>
-  <updated>2013-11-21T00:40:05-08:00</updated>
-  <id>fake.coderblog.com/</id>
+  <link href="http://hellosummer.github.io/atom.xml" rel="self"/>
+  <link href="http://hellosummer.github.io/"/>
+  <updated>2013-11-21T02:02:37-08:00</updated>
+  <id>http://hellosummer.github.io/</id>
   <author>
     <name><![CDATA[Miguel Camba VJia]]></name>
     
@@ -14,10 +14,33 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Deploying Octopress to Github Pages and Setting Custom Subdomain CNAME]]></title>
+    <link href="http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/"/>
+    <updated>2013-11-21T02:01:05-08:00</updated>
+    <id>http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname</id>
+    <content type="html"><![CDATA[<p>Deployment</p>
+
+<p>Octopress supports Heroku, rsync and Github Pages deployment. I chose the Github Pages because Github provide the CNAME changes, so the site can be on your desired domain.</p>
+
+<p>Github Pages setup</p>
+
+<p>There are two ways of having pages on the Github.</p>
+
+<p>The User/Organization pages <a href="http://username.github.com">http://username.github.com</a> and project pages gh-pages.</p>
+
+<p>The my way was the User/Organization pages.</p>
+
+<p>Setting up the repository on Github</p>
+
+<p>Create new repository on Github and named it as your User/Organization name plus .github.com in my case was xajler.github.com.</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Deploying Octopress to Github Pages and Vjia CNAME]]></title>
-    <link href="fake.coderblog.com/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/"/>
+    <link href="http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/"/>
     <updated>2013-11-21T00:30:17-08:00</updated>
-    <id>fake.coderblog.com/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname</id>
+    <id>http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname</id>
     <content type="html"><![CDATA[<h2>Create fist post</h2>
 
 <p>generate the site. It&rsquo;s been some days to build the log.</p>

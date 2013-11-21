@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Octopress | Coder blog]]></title>
-  <link href="fake.coderblog.com/blog/categories/octopress/atom.xml" rel="self"/>
-  <link href="fake.coderblog.com/"/>
-  <updated>2013-11-21T00:40:05-08:00</updated>
-  <id>fake.coderblog.com/</id>
+  <link href="http://hellosummer.github.io/blog/categories/octopress/atom.xml" rel="self"/>
+  <link href="http://hellosummer.github.io/"/>
+  <updated>2013-11-21T02:02:37-08:00</updated>
+  <id>http://hellosummer.github.io/</id>
   <author>
     <name><![CDATA[Miguel Camba VJia]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Deploying Octopress to Github Pages and Vjia CNAME]]></title>
-    <link href="fake.coderblog.com/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/"/>
+    <link href="http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/"/>
     <updated>2013-11-21T00:30:17-08:00</updated>
-    <id>fake.coderblog.com/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname</id>
+    <id>http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname</id>
     <content type="html"><![CDATA[<h2>Create fist post</h2>
 
 <p>generate the site. It&rsquo;s been some days to build the log.</p>

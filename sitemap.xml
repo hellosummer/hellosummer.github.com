@@ -2,20 +2,26 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>
-            fake.coderblog.com/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/
+            http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-vjia-cname/
         </loc>
         <lastmod>2013-11-21T00:32:43-08:00</lastmod>
     </url>
     <url>
-        <loc>fake.coderblog.com/</loc>
-        <lastmod>2013-11-21T00:32:43-08:00</lastmod>
+        <loc>
+            http://hellosummer.github.io/blog/2013/11/21/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/
+        </loc>
+        <lastmod>2013-11-21T02:02:22-08:00</lastmod>
     </url>
     <url>
-        <loc>fake.coderblog.com/robots.txt</loc>
+        <loc>http://hellosummer.github.io/</loc>
+        <lastmod>2013-11-21T02:02:22-08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://hellosummer.github.io/robots.txt</loc>
         <lastmod>2013-11-21T00:26:15-08:00</lastmod>
     </url>
     <url>
-        <loc>fake.coderblog.com/blog/archives/</loc>
-        <lastmod>2013-11-21T00:32:43-08:00</lastmod>
+        <loc>http://hellosummer.github.io/blog/archives/</loc>
+        <lastmod>2013-11-21T02:02:22-08:00</lastmod>
     </url>
 </urlset>
