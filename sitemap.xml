@@ -13,8 +13,14 @@
         <lastmod>2013-11-21T02:02:22-08:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://hellosummer.github.io/blog/2013/11/21/yet-another-post-to-setup-github-blog/
+        </loc>
+        <lastmod>2013-11-21T02:15:51-08:00</lastmod>
+    </url>
+    <url>
         <loc>http://hellosummer.github.io/</loc>
-        <lastmod>2013-11-21T02:02:22-08:00</lastmod>
+        <lastmod>2013-11-21T02:15:51-08:00</lastmod>
     </url>
     <url>
         <loc>http://hellosummer.github.io/robots.txt</loc>
@@ -22,6 +28,6 @@
     </url>
     <url>
         <loc>http://hellosummer.github.io/blog/archives/</loc>
-        <lastmod>2013-11-21T02:02:22-08:00</lastmod>
+        <lastmod>2013-11-21T02:15:51-08:00</lastmod>
     </url>
 </urlset>

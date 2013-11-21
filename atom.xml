@@ -4,7 +4,7 @@
   <title><![CDATA[Coder blog]]></title>
   <link href="http://hellosummer.github.io/atom.xml" rel="self"/>
   <link href="http://hellosummer.github.io/"/>
-  <updated>2013-11-21T02:02:37-08:00</updated>
+  <updated>2013-11-21T02:16:01-08:00</updated>
   <id>http://hellosummer.github.io/</id>
   <author>
     <name><![CDATA[Miguel Camba VJia]]></name>
@@ -12,6 +12,37 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Yet Another Post to Setup Github Blog]]></title>
+    <link href="http://hellosummer.github.io/blog/2013/11/21/yet-another-post-to-setup-github-blog/"/>
+    <updated>2013-11-21T02:12:59-08:00</updated>
+    <id>http://hellosummer.github.io/blog/2013/11/21/yet-another-post-to-setup-github-blog</id>
+    <content type="html"><![CDATA[<h2>abcd title</h2>
+
+<hr />
+
+<p>Pages don&rsquo;t build: &ldquo;Unable to run Jekyll&rdquo;
+Sometimes pages fail to build after a push and return the error &ldquo;page build failed&rdquo;. There are a number of causes for this error.</p>
+
+<p>Unverified email address</p>
+
+<p>The Pages build process will not be triggered by a push if the user who pushed the commit doesn&rsquo;t have a verified email address.</p>
+
+<p>Once you verify an email address, you&rsquo;ll need to make another push to trigger the Pages build process. You can also contact us so that we can manually run a build.</p>
+
+<p>Unsafe plugins</p>
+
+<p>The Pages server will not build with plugins that are not marked as safe. Note that this includes all plugins in the _plugins folder.
+There are two possible solutions to this problem:</p>
+
+<p>Remove the unsafe plugins or
+Build the pages locally and push the result files instead of the source files
+The second option is the strategy used by Octopress.</p>
+
+<p>Syntax errors</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Deploying Octopress to Github Pages and Setting Custom Subdomain CNAME]]></title>
