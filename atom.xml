@@ -4,7 +4,7 @@
   <title><![CDATA[Coder blog]]></title>
   <link href="http://hellosummer.github.io/atom.xml" rel="self"/>
   <link href="http://hellosummer.github.io/"/>
-  <updated>2013-11-21T22:52:00-08:00</updated>
+  <updated>2013-11-21T22:59:42-08:00</updated>
   <id>http://hellosummer.github.io/</id>
   <author>
     <name><![CDATA[Miguel Camba VJia]]></name>
@@ -932,7 +932,7 @@ The second option is the strategy used by Octopress.</p>
 
 <p>The following picture gives an overview of the most important HDFS components.</p>
 
-<p><img src="http://hellosummer.github.io/images/HDFS-Architecture.gif" title="Optional title" alt="HDFS Architecture" /></p>
+<p><img src="http://hellosummer.github.io/images/HDFS-Architecture.gif" title="Optional UU title" alt="HDFS Architecture" /></p>
 
 <p>EOF.</p>
 ]]></content>
