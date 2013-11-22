@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ubuntu | Coder blog]]></title>
   <link href="http://hellosummer.github.io/blog/categories/ubuntu/atom.xml" rel="self"/>
   <link href="http://hellosummer.github.io/"/>
-  <updated>2013-11-21T21:55:00-08:00</updated>
+  <updated>2013-11-21T22:52:00-08:00</updated>
   <id>http://hellosummer.github.io/</id>
   <author>
     <name><![CDATA[Miguel Camba VJia]]></name>
@@ -613,7 +613,7 @@ This command was run using /home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/h
 
 <p>The following picture gives an overview of the most important HDFS components.</p>
 
-<p><img src="../images/HDFS-Architecture.gif" title="Optional title" alt="HDFS Architecture" /></p>
+<p><img src="/images/HDFS-Architecture.gif" title="Optional title" alt="HDFS Architecture" /></p>
 
 <p>EOF.</p>
 ]]></content>
