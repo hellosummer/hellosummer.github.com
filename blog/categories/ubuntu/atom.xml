@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ubuntu | Coder blog]]></title>
+  <link href="http://hellosummer.github.io/blog/categories/ubuntu/atom.xml" rel="self"/>
+  <link href="http://hellosummer.github.io/"/>
+  <updated>2013-11-21T21:55:00-08:00</updated>
+  <id>http://hellosummer.github.io/</id>
+  <author>
+    <name><![CDATA[Miguel Camba VJia]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Single Node Steup of Hadoop]]></title>
+    <link href="http://hellosummer.github.io/blog/2013/08/01/single-node-setup-of-hadoop/"/>
+    <updated>2013-08-01T03:12:59-07:00</updated>
+    <id>http://hellosummer.github.io/blog/2013/08/01/single-node-setup-of-hadoop</id>
+    <content type="html"><![CDATA[<h2>Single-Node setup of Hadoop</h2>
+
+<h2>1) 配置hadoop-env.sh</h2>
+
+<p>走到这一步时，是参照<a href="http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/">Michael-noll.com上的内容</a>，但是需要配置$HADOOP_HOME/conf/hadoop-env.sh了，我不清楚他在写此篇博客时是基于Hadoop哪个版本，但是在我当前版本-2.0.5-alpha，并没有此目录；所以以下内容和记录转向参考<a href="http://raseshmori.wordpress.com/2012/09/23/install-hadoop-2-0-1-yarn-nextgen/">Install Hadoop 2.0.1-alpha Yarn Next-Gen</a>.</p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha/etc/hadoop$ hadoop version
+Hadoop 2.0.5-alpha
+Subversion http://svn.apache.org/repos/asf/hadoop/common -r 1488459
+Compiled by jenkins on 2013-06-01T04:05Z
+From source with checksum c8f4bd45ac25c31b815f311b32ef17
+This command was run using /home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/hadoop-common-2.0.5-alpha.jar
+</code></p>
+
+<h2>2) 需要安装Tarball么，先不安装，待定。</h2>
+
+<h2>3) 配置环境变量</h2>
+
+<p>.bashrc:
+```
+// configure follow raseshmori.wordpress.com
+HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_MAPRED_HOME</p>
+
+<p>HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME</p>
+
+<p>HADOOP_HDFS_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME</p>
+
+<p>HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export HADOOP_HDFS_HOME
+```</p>
+
+<h2>4) 创建2个目录，用于存储namenode和datanode的数据</h2>
+
+<p><code>
+hduser@ubuntu:~$ pwd
+/home/hduser
+hduser@ubuntu:~$ ls
+bak.of.bashrc  examples.desktop  hadoop-2.0.5-alpha  hadoop-2.0.5-alpha.tar.gz
+hduser@ubuntu:~$ mkdir hadoop_data
+hduser@ubuntu:~$ cd hadoop_data/
+hduser@ubuntu:~/hadoop_data$ ls
+hduser@ubuntu:~/hadoop_data$ mkdir hdfs
+hduser@ubuntu:~/hadoop_data$ cd hdfs/
+hduser@ubuntu:~/hadoop_data/hdfs$ mkdir namenode
+hduser@ubuntu:~/hadoop_data/hdfs$ mkdir datanode
+hduser@ubuntu:~/hadoop_data/hdfs$ pwd
+/home/hduser/hadoop_data/hdfs
+</code></p>
+
+<h2>5) 设置Properties在Config文件中：</h2>
+
+<ul>
+<li>yarn-site.xml ($HADOOP_HOME/etc/hadoop)</li>
+</ul>
+
+
+<p>```
+// Site specifc YARN configuration properties
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce.shuffle</value>
+</property></p>
+
+<p><property>
+  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+  <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+```</p>
+
+<ul>
+<li>core-site.xml ($HADOOP_HOME/etc/hadoop)</li>
+</ul>
+
+
+<p>```
+<configuration></p>
+
+<p> <property></p>
+
+<pre><code>&lt;name&gt;fs.default.name&lt;/name&gt;
+&lt;value&gt;hdfs://localhost:9000&lt;/value&gt;
+</code></pre>
+
+<p> </property></p>
+
+<p></configuration>
+```</p>
+
+<ul>
+<li>hdfs-site.xml</li>
+</ul>
+
+
+<p>```
+<configuration></p>
+
+<p> <property></p>
+
+<pre><code>&lt;name&gt;dfs.replication&lt;/name&gt;
+&lt;value&gt;1&lt;/value&gt;
+</code></pre>
+
+<p> </property></p>
+
+<p> <property>
+   <name>dfs.namenode.name.dir</name>
+   <value>file:/home/hduser/hadoop_data/hdfs/namenode</value>
+ </property></p>
+
+<p> <property>
+   <name>dfs.datanode.data.dir</name>
+   <value>file:/home/hduser/hadoop_data/hdfs/datanode</value>
+ </property>
+</configuration>
+```</p>
+
+<ul>
+<li>mapred-site.xml</li>
+</ul>
+
+
+<p><code>
+&lt;configuration&gt;
+ &lt;property&gt;
+   &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+   &lt;value&gt;yarn&lt;/value&gt;
+ &lt;/property&gt;
+&lt;/configuration&gt;
+</code></p>
+
+<h2>6) 格式化namenode</h2>
+
+<blockquote><p>This step is needed only for the first time. Doing it every time will result in loss of content on HDFS.</p>
+
+<blockquote><p>注意1 > 1.1注意 > 1.2注意</p></blockquote></blockquote>
+
+<p><code>hduser@ubuntu:~/hadoop-2.0.5-alpha/bin$ ./hadoop namenode -format</code></p>
+
+<p>```
+hduser@ubuntu:~/hadoop-2.0.5-alpha/bin$ ./hadoop namenode -format
+DEPRECATED: Use of this script to execute hdfs command is deprecated.
+Instead use the hdfs command for it.</p>
+
+<p>13/07/31 20:42:11 INFO namenode.NameNode: STARTUP_MSG:
+/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>
+STARTUP_MSG: Starting NameNode
+STARTUP_MSG:   host = ubuntu/127.0.1.1
+STARTUP_MSG:   args = [-format]
+STARTUP_MSG:   version = 2.0.5-alpha
+STARTUP_MSG:   classpath = /home/hduser/hadoop-2.0.5-alpha/etc/hadoop:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-configuration-1.6.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jettison-1.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/snappy-java-1.0.3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jackson-mapper-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-cli-1.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jsp-api-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-beanutils-core-1.8.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jaxb-impl-2.2.3-1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-httpclient-3.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/xmlenc-0.52.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/guava-11.0.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/protobuf-java-2.4.0a.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-el-1.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jetty-6.1.26.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jets3t-0.6.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-beanutils-1.7.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/asm-3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/zookeeper-3.4.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-digester-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/avro-1.5.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jersey-server-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jasper-compiler-5.5.23.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jackson-core-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-math-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/activation-1.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-lang-2.5.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-collections-3.2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/paranamer-2.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/servlet-api-2.5.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jsch-0.1.42.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-io-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jersey-core-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-logging-1.1.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/slf4j-log4j12-1.6.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-net-3.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jsr305-1.3.9.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/log4j-1.2.17.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jackson-xc-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/hadoop-auth-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jetty-util-6.1.26.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jaxb-api-2.2.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jersey-json-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jackson-jaxrs-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/stax-api-1.0.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/commons-codec-1.4.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/hadoop-annotations-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/kfs-0.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/jasper-runtime-5.5.23.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/lib/slf4j-api-1.6.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/hadoop-common-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/hadoop-common-2.0.5-alpha-tests.jar:/home/hduser/hadoop-2.0.5-alpha/contrib/capacity-scheduler/<em>.jar:/home/hduser/hadoop-2.0.5-alpha/contrib/capacity-scheduler/</em>.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jackson-mapper-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-cli-1.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jsp-api-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/xmlenc-0.52.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/guava-11.0.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/protobuf-java-2.4.0a.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-el-1.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jetty-6.1.26.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/asm-3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jersey-server-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jackson-core-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-daemon-1.0.13.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-lang-2.5.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/servlet-api-2.5.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-io-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jersey-core-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-logging-1.1.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jsr305-1.3.9.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/log4j-1.2.17.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jetty-util-6.1.26.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/commons-codec-1.4.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/lib/jasper-runtime-5.5.23.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/hadoop-hdfs-2.0.5-alpha-tests.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/hdfs/hadoop-hdfs-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/snappy-java-1.0.3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/jackson-mapper-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/guice-servlet-3.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/aopalliance-1.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/protobuf-java-2.4.0a.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/netty-3.5.11.Final.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/asm-3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/avro-1.5.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/junit-4.8.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/jersey-server-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/jackson-core-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/paranamer-2.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/commons-io-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/jersey-core-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/log4j-1.2.17.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/jersey-guice-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/guice-3.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/javax.inject-1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/lib/hadoop-annotations-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-server-nodemanager-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-client-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-site-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-server-tests-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-api-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-server-common-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-common-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-applications-unmanaged-am-launcher-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-server-web-proxy-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-server-resourcemanager-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/yarn/hadoop-yarn-applications-distributedshell-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/snappy-java-1.0.3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/jackson-mapper-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/guice-servlet-3.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/aopalliance-1.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/protobuf-java-2.4.0a.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/netty-3.5.11.Final.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/asm-3.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/avro-1.5.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/junit-4.8.2.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/jersey-server-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/jackson-core-asl-1.8.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/paranamer-2.3.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/commons-io-2.1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/jersey-core-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/log4j-1.2.17.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/jersey-guice-1.8.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/guice-3.0.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/javax.inject-1.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/lib/hadoop-annotations-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-hs-plugins-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.0.5-alpha-tests.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-shuffle-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-hs-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-app-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.0.5-alpha.jar:/home/hduser/hadoop-2.0.5-alpha/share/hadoop/mapreduce/hadoop-mapreduce-client-common-2.0.5-alpha.jar
+STARTUP_MSG:   build = <a href="http://svn.apache.org/repos/asf/hadoop/common">http://svn.apache.org/repos/asf/hadoop/common</a> -r 1488459; compiled by &lsquo;jenkins&rsquo; on 2013-06-01T04:05Z
+STARTUP_MSG:   java = 1.7.0_25
+</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/
+Formatting using clusterid: CID-dcd1e06d-a0f7-450c-b5c8-9f81f40e0114
+13/07/31 20:42:12 INFO util.HostsFileReader: Refreshing hosts (include/exclude) list
+13/07/31 20:42:12 INFO blockmanagement.DatanodeManager: dfs.block.invalidate.limit=1000
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: dfs.block.access.token.enable=false
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: defaultReplication         = 1
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: maxReplication             = 512
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: minReplication             = 1
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: maxReplicationStreams      = 2
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: shouldCheckForEnoughRacks  = false
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: replicationRecheckInterval = 3000
+13/07/31 20:42:13 INFO blockmanagement.BlockManager: encryptDataTransfer        = false
+13/07/31 20:42:13 INFO namenode.FSNamesystem: fsOwner             = hduser (auth:SIMPLE)
+13/07/31 20:42:13 INFO namenode.FSNamesystem: supergroup          = supergroup
+13/07/31 20:42:13 INFO namenode.FSNamesystem: isPermissionEnabled = true
+13/07/31 20:42:13 INFO namenode.FSNamesystem: HA Enabled: false
+13/07/31 20:42:13 INFO namenode.FSNamesystem: Append Enabled: true
+13/07/31 20:42:13 INFO namenode.NameNode: Caching file names occuring more than 10 times
+13/07/31 20:42:13 INFO namenode.FSNamesystem: dfs.namenode.safemode.threshold-pct = 0.9990000128746033
+13/07/31 20:42:13 INFO namenode.FSNamesystem: dfs.namenode.safemode.min.datanodes = 0
+13/07/31 20:42:13 INFO namenode.FSNamesystem: dfs.namenode.safemode.extension     = 30000
+Re-format filesystem in Storage Directory /home/hduser/hadoop_data/hdfs/namenode ? (Y or N) y
+13/07/31 20:42:19 INFO common.Storage: Storage directory /home/hduser/hadoop_data/hdfs/namenode has been successfully formatted.
+13/07/31 20:42:19 INFO namenode.FSImage: Saving image file /home/hduser/hadoop_data/hdfs/namenode/current/fsimage.ckpt_0000000000000000000 using no compression
+13/07/31 20:42:19 INFO namenode.FSImage: Image file of size 121 saved in 0 seconds.
+13/07/31 20:42:19 INFO namenode.NNStorageRetentionManager: Going to retain 1 images with txid >= 0
+13/07/31 20:42:19 INFO util.ExitUtil: Exiting with status 0
+13/07/31 20:42:19 INFO namenode.NameNode: SHUTDOWN_MSG:
+/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>
+SHUTDOWN_MSG: Shutting down NameNode at ubuntu/127.0.1.1
+</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>/
+```</p>
+
+<h2>7) start HDFS processes</h2>
+
+<p><em>Name node</em></p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha/sbin$ ./hadoop-daemon
+hadoop-daemon.sh   hadoop-daemons.sh  
+hduser@ubuntu:~/hadoop-2.0.5-alpha/sbin$ ./hadoop-daemon.sh  start namenode
+starting namenode, logging to /home/hduser/hadoop-2.0.5-alpha/logs/hadoop-hduser-namenode-ubuntu.out
+hduser@ubuntu:~/hadoop-2.0.5-alpha/sbin$ jps
+The program 'jps' can be found in the following packages:
+ * openjdk-6-jdk
+ * openjdk-7-jdk
+Ask your administrator to install one of them
+// 不清楚jps命令是什么，但是这里应该对安装没有影响，已经安装了Oracle JDK 1.7
+</code></p>
+
+<p><em>Data node</em></p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha/sbin$ ./hadoop-daemon.sh start datanode
+starting datanode, logging to /home/hduser/hadoop-2.0.5-alpha/logs/hadoop-hduser-datanode-ubuntu.out
+</code></p>
+
+<h2>8) start Hadoop Map-Reduce Processes</h2>
+
+<p><em>Resource Manager</em></p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ sbin/yarn-daemon.sh start resourcemanager
+starting resourcemanager, logging to /home/hduser/hadoop-2.0.5-alpha/logs/yarn-hduser-resourcemanager-ubuntu.out
+</code></p>
+
+<p><em>Node Manager</em></p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ sbin/yarn-daemon.sh start nodemanager
+starting nodemanager, logging to /home/hduser/hadoop-2.0.5-alpha/logs/yarn-hduser-nodemanager-ubuntu.out
+</code></p>
+
+<p><em>Job History Server</em></p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ sbin/mr-jobhistory-daemon.sh start historyserver
+starting historyserver, logging to /home/hduser/hadoop-2.0.5-alpha/logs/mapred-hduser-historyserver-ubuntu.out
+</code></p>
+
+<h2>9) 运行一个简单/经典的字符统计示例，来验证安装是否成功</h2>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ mkdir in
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ cat &gt; in/file    //这个命令不错
+This is one line
+This is another one
+</code></p>
+
+<p>Add this directory to HDFS:</p>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ bin/hadoop dfs -copyFromLocal in /in
+DEPRECATED: Use of this script to execute hdfs command is deprecated.
+Instead use the hdfs command for it.
+// note: dfs命令已经被弃用，应用fs命令，见[fs replace dfs](http://stackoverflow.com/questions/11715082/why-is-it-keep-showing-deprecated-error-when-running-hadoop-or-dfs-command)
+hduser@ubuntu:~/hadoop-2.0.5-alpha$ ./bin/hadoop fs -copyFromLocal in /in
+</code></p>
+
+<p>运行share目录中提供的wordcount示例：</p>
+
+<p><code>hduser@ubuntu:~/hadoop-2.0.5-alpha/logs$ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.0.5-alpha.jar wordcount /in /out3</code></p>
+
+<p>to continue&hellip;</p>
+
+<h2>10) 运行<em>netstat</em>命令，查看是否Hadoop监听在已经配置的端口</h2>
+
+<p><code>
+hduser@ubuntu:~/hadoop-2.0.5-alpha/logs$ sudo netstat -plten | grep java
+[sudo] password for hduser:
+tcp        0      0 0.0.0.0:19888           0.0.0.0:*               LISTEN      1001       33451       6931/java       
+tcp        0      0 0.0.0.0:50070           0.0.0.0:*               LISTEN      1001       31961       6436/java       
+tcp        0      0 0.0.0.0:50010           0.0.0.0:*               LISTEN      1001       32345       6510/java       
+tcp        0      0 0.0.0.0:50075           0.0.0.0:*               LISTEN      1001       32352       6510/java       
+tcp        0      0 0.0.0.0:10020           0.0.0.0:*               LISTEN      1001       33459       6931/java       
+tcp        0      0 0.0.0.0:50020           0.0.0.0:*               LISTEN      1001       32358       6510/java       
+tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN      1001       31785       6436/java       
+tcp6       0      0 :::8042                 :::*                    LISTEN      1001       33369       6825/java       
+tcp6       0      0 :::8080                 :::*                    LISTEN      1001       33367       6825/java       
+tcp6       0      0 :::8088                 :::*                    LISTEN      1001       32771       6594/java       
+tcp6       0      0 :::8030                 :::*                    LISTEN      1001       32823       6594/java       
+tcp6       0      0 :::8031                 :::*                    LISTEN      1001       32779       6594/java       
+tcp6       0      0 :::8032                 :::*                    LISTEN      1001       32831       6594/java       
+tcp6       0      0 :::8033                 :::*                    LISTEN      1001       32843       6594/java       
+tcp6       0      0 :::8040                 :::*                    LISTEN      1001       33363       6825/java       
+tcp6       0      0 :::37896                :::*                    LISTEN      1001       33353       6825/java       
+hduser@ubuntu:~/hadoop-2.0.5-alpha/logs$
+</code></p>
+
+<h2>11) Web界面</h2>
+
+<ul>
+<li>查看HDFS及其health信息</li>
+</ul>
+
+
+<p><a href="http://132.253.222.240:50070">http://132.253.222.240:50070</a> 或者 <a href="http://132.253.222.240:50070/dfshealth.jsp">http://132.253.222.240:50070/dfshealth.jsp</a></p>
+
+<ul>
+<li>查看Hadoop All Applications：</li>
+</ul>
+
+
+<p><a href="http://132.253.222.240:8088">http://132.253.222.240:8088</a> 或者 <a href="http://132.253.222.240:8088/cluster">http://132.253.222.240:8088/cluster</a></p>
+
+<p>(这里的IP请使用localhost或者自己的对应IP，我所使用的是Ubuntu CMD)</p>
+
+<h4>待解问题：</h4>
+
+<ul>
+<li><p>what&rsquo;s YARN ?</p></li>
+<li><p>what&rsquo;s jps ?</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[2013-07-11-putty_to_connect_to_ubuntu_vm]]></title>
+    <link href="http://hellosummer.github.io/blog/2013/07/11/putty_to_connect_to_ubuntu_vm/"/>
+    <updated>2013-07-11T03:12:59-07:00</updated>
+    <id>http://hellosummer.github.io/blog/2013/07/11/putty_to_connect_to_ubuntu_vm</id>
+    <content type="html"><![CDATA[<h2>Putty连接VM中的Ubuntu问题及解决</h2>
+
+<p>问题：</p>
+
+<p>VMWare中安装了Ubuntu，通过配置使其命令行模式启动；启动后通过$ifconfig获得其IP，通过Putty中设置IP、Port 22 访问报错，错误信息“不会出现登录界面，几秒钟后弹出窗口-Network error : Connection Refused”.</p>
+
+<p>解决：</p>
+
+<ol>
+<li>可能没有开启ssh-server服务：</li>
+</ol>
+
+
+<p>命令$ sudo apt-get install openssh-server</p>
+
+<p>安装成功；之后还是之前同样的错误、不能Putty连接；</p>
+
+<ol>
+<li>安装openssh-client，但是Ubuntu缺省已经安装了openssh-client。</li>
+</ol>
+
+
+<p>$sudo apt-get insall openssh-client</p>
+
+<ol>
+<li>确认sshserver已经启动：</li>
+</ol>
+
+
+<p>$ps -e | grep ssh</p>
+
+<p>如果没有看到ssh，则手动启动 $sudo /etc/init.d/ssh start (or $sudo service ssh start)</p>
+
+<ol>
+<li>Putty依旧不能访问</li>
+</ol>
+
+
+<p>关闭windows7防火墙，全部关闭，应该是windows禁止了通过22端口访问；可以连接成功。</p>
+
+<ol>
+<li>VM Ubuntu端口改变问题</li>
+</ol>
+
+
+<p>配置成功后，通过Putty连接没有问题，但是发现每过一段时间，就回出现连接丢失的现象；几次三番后，发现其IP在动态改变；解决办法是在VM Setting中修改Network Adapter方式，NAT &ndash;> Bridged。</p>
+
+<p>（NAT: Used to share the host&rsquo;s IP address; Bridged: Connected directly to the physical network）</p>
+
+<ol>
+<li>其它说明</li>
+</ol>
+
+
+<p>ssh-server配置文件位于/etc/ssh/sshd_config文件，可以修改ssh的服务端口，默认是22,；修改后重启ssh服务： $sudo /etc/init.d/ssh restart</p>
+
+<ol>
+<li>遗留问题</li>
+</ol>
+
+
+<p>只能通过IP+Port的方式访问，如何才能通过hostname访问呢？</p>
+
+<ol>
+<li>JDK下载，通过curl</li>
+</ol>
+
+
+<p>8.1 安装 curl：$sudo apt-get curl</p>
+
+<p>8.2 how to download Oracle JDK without browser: [<a href="https://gist.github.com/hgomez/4697585">https://gist.github.com/hgomez/4697585</a>]</p>
+
+<p>8.3 使用SecureCRT所带SFTP上传JDK至Ubuntu，版本jdk-7u25-linux-i586.tar.gz
+<code>
+vincent@ubuntu:~$ tar -xf jdk-7u25-linux-i586.tar.gz
+vincent@ubuntu:~$ ls
+Desktop    examples.desktop            Music     Templates
+Documents  jdk1.7.0_25                 Pictures  Videos
+Downloads  jdk-7u25-linux-i586.tar.gz  Public
+vincent@ubuntu:~$ cd jdk1.7.0_25/
+vincent@ubuntu:~/jdk1.7.0_25$ cd bin
+vincent@ubuntu:~/jdk1.7.0_25/bin$ ./java -version
+java version "1.7.0_25"
+Java(TM) SE Runtime Environment (build 1.7.0_25-b15)
+Java HotSpot(TM) Client VM (build 23.25-b01, mixed mode)
+</code>
+配置JDK variables
+```
+vincent@ubuntu:~$ vi .bashrc</p>
+
+<h1>export my own variables</h1>
+
+<p>JAVA_HOME=/home/vincent/jdk1.7.0_25
+export JAVA_HOME
+PATH=$PATH:$JAVA_HOME/bin
+export PATH</p>
+
+<p>vincent@ubuntu:~$ source .bashrc
+vincent@ubuntu:~$ java -version
+java version &ldquo;1.7.0_25&rdquo;
+Java&trade; SE Runtime Environment (build 1.7.0_25-b15)
+Java HotSpot&trade; Client VM (build 23.25-b01, mixed mode)
+```</p>
+
+<ol>
+<li>安装Hadoop</li>
+</ol>
+
+
+<p>9.1 [下载地址, <a href="http://mirror.cogentco.com/pub/apache/hadoop/common/hadoop-2.0.5-alpha/">http://mirror.cogentco.com/pub/apache/hadoop/common/hadoop-2.0.5-alpha/</a>]</p>
+
+<p>9.2 Setting up a Single Node Cluster, follow <B>Running Hadoop on Ubuntu Linux (Single-Node Cluster)</B> [<a href="http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/">http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/</a>]</p>
+
+<blockquote><p> The main goal of this tutorial is to get a simple Hadoop installation up and running so that you can play around with the software and learn more about it.</p></blockquote>
+
+<p>9.3 添加Hadoop专用user
+<code>``
+vincent@ubuntu:~$ sudo addgroup hadoop
+[sudo] password for vincent:
+Adding group</code>hadoop' (GID 1001) &hellip;
+Done.
+vincent@ubuntu:~$ sudo adduser &mdash;ingroup hadoop hduser
+Adding user <code>hduser' ...
+Adding new user</code>hduser' (1001) with group <code>hadoop' ...
+Creating home directory</code>/home/hduser' &hellip;
+Copying files from `/etc/skel' &hellip;
+Enter new UNIX password:
+Retype new UNIX password:
+Sorry, passwords do not match
+passwd: Authentication token manipulation error
+passwd: password unchanged
+Try again? [y/N] y
+Enter new UNIX password:
+Retype new UNIX password:
+passwd: password updated successfully
+Changing the user information for hduser
+Enter the new value, or press ENTER for the default</p>
+
+<pre><code>    Full Name []: hadoop user
+    Room Number []: 
+    Work Phone []: 
+    Home Phone []: 
+    Other []: 
+</code></pre>
+
+<p>Is the information correct? [Y/n] y
+```</p>
+
+<p>9.4 需要设置SSH远程自动登录，需要其他机器直接访问Hadoop node，configure it to allow SSH public key authentication. 参考[Ubuntu Guide, <a href="http://ubuntuguide.org/wiki/Ubuntu_Raring">http://ubuntuguide.org/wiki/Ubuntu_Raring</a>]</p>
+
+<ul>
+<li>(这个时候，考虑，是不是之前使用user vincent配置了Java环境变量是不是不对、应该配置为全局变量？ 后面再看。)</li>
+</ul>
+
+
+<p>```
+hduser@ubuntu:~$ ssh-keygen -t rsa -P &ldquo;&rdquo;
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/hduser/.ssh/id_rsa):
+Created directory &lsquo;/home/hduser/.ssh&rsquo;.
+Your identification has been saved in /home/hduser/.ssh/id_rsa.
+Your public key has been saved in /home/hduser/.ssh/id_rsa.pub.
+The key fingerprint is:
+9f:28:f3:80:ae:6c:64:d6:78:74:74:67:fa:21:91:f3 hduser@ubuntu
+The key&rsquo;s randomart image is:
++&mdash;[ RSA 2048]&mdash;&mdash;+
+|         .       |
+|      . = o      |
+|     . . B       |
+|    . . o E      |
+|   + .  So .     |
+|  = o.   o..     |
+| + .. + . o      |
+| &hellip;   =         |
+| .o..   .        |
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+
+hduser@ubuntu:~$ ll
+hduser@ubuntu:~$ cat .ssh/id_rsa.pub >> .ssh/authorized_keys</p>
+
+<p>//测试是否可以无密码登录
+hduser@ubuntu:~/.ssh$ ssh localhost
+The authenticity of host &lsquo;localhost (127.0.0.1)&rsquo; can&rsquo;t be established.
+ECDSA key fingerprint is 47:6b:7b:a6:e4:80:38:96:f9:9c:a3:58:48:f4:51:82.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &lsquo;localhost&rsquo; (ECDSA) to the list of known hosts.
+Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.2.0-23-generic-pae i686)</p>
+
+<ul>
+<li>Documentation:  <a href="https://help.ubuntu.com/">https://help.ubuntu.com/</a></li>
+</ul>
+
+
+<p>Last login: Wed Jul 31 01:38:45 2013 from gjia2d.ptcnet.ptc.com
+hduser@ubuntu:~$
+```</p>
+
+<p>9.5 开始安装配置Hadoop</p>
+
+<ul>
+<li>配置Hadoop user hduser 加入sudo权限中（需要这一步么？todo……）</li>
+</ul>
+
+
+<p>```
+vincent@ubuntu:/etc$ cd /etc/
+vincent@ubuntu:/etc$ ll sudo*
+-r&mdash;r&mdash;&mdash;&ndash; 1 root root  767 Jul 31 02:17 sudoers</p>
+
+<p>sudoers.d:
+total 20
+drwxr-xr-x   2 root root  4096 Apr 23  2012 ./
+drwxr-xr-x 127 root root 12288 Jul 31 02:17 ../
+-r&mdash;r&mdash;&mdash;&ndash;   1 root root   753 Jan 31  2012 README
+vincent@ubuntu:/etc$ sudo vi sudoers</p>
+
+<p>// add sudo users
+hduser ALL=(ALL) ALL
+// sudoers文件的修改立即生效
+```</p>
+
+<ul>
+<li>添加Hadoop相关变量设置到hduser的$HOME/.bashrc</li>
+</ul>
+
+
+<p>```
+// vj, add Hadoop Variables
+hduser@ubuntu:~$ vi .bashrc</p>
+
+<p>HADOOP_HOME=/home/hduser/hadoop-2.0.5-alpha
+export HADOOP_HOME
+JAVA_HOME=/home/vincent/jdk1.7.0_25
+export JAVA_HOME</p>
+
+<p>//Some convenient aliases and functions for running Hadoop-related commands
+unalias fs &amp;> /dev/null
+alias fs=&ldquo;hadoop fs&rdquo;
+unalias hls &amp;> /dev/null
+alias hls=&ldquo;fs -ls&rdquo;</p>
+
+<p>PATH=$PATH:$HADOOP_HOME/bin
+export PATH</p>
+
+<p>hduser@ubuntu:~$ hadoop version
+Hadoop 2.0.5-alpha
+Subversion <a href="http://svn.apache.org/repos/asf/hadoop/common">http://svn.apache.org/repos/asf/hadoop/common</a> -r 1488459
+Compiled by jenkins on 2013-06-01T04:05Z
+From source with checksum c8f4bd45ac25c31b815f311b32ef17
+This command was run using /home/hduser/hadoop-2.0.5-alpha/share/hadoop/common/hadoop-common-2.0.5-alpha.jar
+```</p>
+
+<ul>
+<li>配置并运行起Hadoop，请看<a href="./2013-08-01-single-node-setup-of-hadoop.md">下一篇 &ndash; Single-Node setup of Hadoop</a></li>
+</ul>
+
+
+<p>TODO：</p>
+
+<ul>
+<li>当前时间显示是PDT时区(Wed Jul 31 01:46:14 PDT 2013)，如何配置显示东八区时间？</li>
+</ul>
+
+
+<p>补充资料：</p>
+
+<ul>
+<li><p>Ubuntu Environment Variables (link, <a href="https://help.ubuntu.com/community/EnvironmentVariables">https://help.ubuntu.com/community/EnvironmentVariables</a>)</p></li>
+<li><h3>What&rsquo;s Hadoop Distributed File System (HDFS)</h3></li>
+</ul>
+
+
+<blockquote><p>The Hadoop Distributed File System (HDFS) is a distributed file system designed to run on commodity hardware. It has many similarities with existing distributed file systems. However, the differences from other distributed file systems are significant. HDFS is highly fault-tolerant and is designed to be deployed on low-cost hardware. HDFS provides high throughput access to application data and is suitable for applications that have large data sets. HDFS relaxes a few POSIX requirements to enable streaming access to file system data. HDFS was originally built as infrastructure for the Apache Nutch web search engine project. HDFS is part of the Apache Hadoop project, which is part of the Apache Lucene project.</p>
+
+<p><I><B>The Hadoop Distributed File System: Architecture and Design</B> &ndash; <a href="http://hadoop.apache.org/hdfs/docs/current/hdfs_design.html">hadoop.apache.org/hdfs/docs/…</a></I></p></blockquote>
+
+<p>The following picture gives an overview of the most important HDFS components.</p>
+
+<p><img src="../images/HDFS-Architecture.gif" title="Optional title" alt="HDFS Architecture" /></p>
+
+<p>EOF.</p>
+]]></content>
+  </entry>
+  
+</feed>
